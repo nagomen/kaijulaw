@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough
@@ -24,7 +24,7 @@ if not all([NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD, OPENAI_API_KEY]):
     raise ValueError("環境変数が正しく設定されていません。")
 
 # Flask アプリケーションの初期化
-app = Flask(__name__, static_folder="static")
+app = Flask(__name__, static_folder="static", template_folder="templates")
 CORS(app)
 
 # LangChain LLMの設定
@@ -118,7 +118,8 @@ def fetch_vector_data(question: str) -> str:
 # Flask APIエンドポイント
 @app.route('/')
 def home():
-    return "Flaskアプリケーションが正常に動作しています！"
+    # templates/index.html をレンダリング
+    return render_template("index.html")
 
 @app.route('/ask', methods=['POST'])
 def ask():
