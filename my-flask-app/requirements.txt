@@ -7,3 +7,4 @@ openai>=1.54.0
 python-dotenv
 gunicorn
 werkzeug==2.2.3
+langchain_community
