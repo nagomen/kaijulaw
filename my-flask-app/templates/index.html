@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>赤門AI法律相談所</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        header {
+            text-align: center;
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px 10px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 36px;
+        }
+
+        header h2 {
+            margin: 10px 0 0;
+            font-size: 24px;
+            color: #eafae5;
+        }
+
+        #description {
+            text-align: center;
+            font-size: 18px;
+            margin: 20px auto;
+            max-width: 800px;
+            color: #555;
+        }
+
+        #description b {
+            color: #333;
+        }
+
+        #chat-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background-color: #fff;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: none;
+        }
+
+        button {
+            display: inline-block;
+            width: 100%;
+            padding: 10px 15px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #answer-container {
+            margin-top: 20px;
+        }
+
+        .answer {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            white-space: pre-wrap;
+        }
+
+        .question {
+            background-color: #e9f7df;
+            border-left: 5px solid #4CAF50;
+        }
+
+        #loading {
+            color: #555;
+            font-style: italic;
+        }
+
+        #advertisement {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+        }
+
+        #advertisement img {
+            max-width: 80%;
+            max-height: 60%;
+            cursor: pointer;
+            border: 5px solid white;
+            border-radius: 10px;
+        }
+
+        #advertisement .close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: white;
+            color: black;
+            font-size: 24px;
+            font-weight: bold;
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            text-align: center;
+            line-height: 40px;
+        }
+
+        #advertisement .close:hover {
+            background-color: #ddd;
+        }
+
+        #advertisement p {
+            color: white;
+            font-size: 20px;
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>赤門AI法律相談所</h1>
+        <h2>AI × 法律</h2>
+    </header>
+    <div id="description">
+        赤門AI法律相談所は<b>東京大学</b>法学部の<b>学生</b>によってつくられた団体です。<br>
+        AIによって法律をもっと手軽に。
+    </div>
+    <div id="chat-container">
+        <label for="question">質問を入力してください:</label>
+        <textarea id="question" placeholder="例: パートナーに浮気されたときどうすればいい？"></textarea>
+        <button onclick="ask()">質問する</button>
+        <p id="loading" style="display: none;">回答を取得しています...</p>
+        <div id="answer-container"></div>
+    </div>
+    <div id="advertisement">
+        <button class="close" onclick="closeAd()">×</button>
+        <img src="http://127.0.0.1:5000/static/banner_big_02.jpg" alt="広告" onclick="redirectToSite()">
+        <p>婚姻や離婚のご相談なら<b>東京大学法律相談所</b>！</p>
+    </div>
+
+    <script>
+        function ask() {
+            const questionField = document.getElementById("question");
+            const answerContainer = document.getElementById("answer-container");
+            const loadingMessage = document.getElementById("loading");
+            const advertisement = document.getElementById("advertisement");
+
+            const question = questionField.value.trim();
+            if (!question) {
+                addMessage("エラー: 質問を入力してください。", "error");
+                return;
+            }
+
+            // 質問を履歴に追加
+            addMessage(question, "question");
+
+            // ローディングメッセージを表示
+            loadingMessage.style.display = "block";
+
+            fetch("http://127.0.0.1:5000/ask", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ question })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("サーバーエラー: " + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                loadingMessage.style.display = "none";
+                if (data.answer) {
+                    addMessage("回答:\n" + data.answer, "answer");
+                } else if (data.error) {
+                    addMessage("エラー: " + data.error, "error");
+                } else {
+                    addMessage("予期しない応答が返されました。", "error");
+                }
+
+                // 質問が終わった後に広告を表示
+                advertisement.style.display = "flex";
+            })
+            .catch(err => {
+                loadingMessage.style.display = "none";
+                addMessage("エラーが発生しました: " + err.message, "error");
+            })
+            .finally(() => {
+                questionField.value = ""; // 入力フィールドをクリア
+            });
+        }
+
+        function addMessage(text, type) {
+            const answerContainer = document.getElementById("answer-container");
+            const messageDiv = document.createElement("div");
+            messageDiv.className = "answer " + type;
+            messageDiv.innerText = text;
+            answerContainer.appendChild(messageDiv);
+
+            // 自動スクロール
+            answerContainer.scrollTop = answerContainer.scrollHeight;
+        }
+
+        function closeAd() {
+            const advertisement = document.getElementById("advertisement");
+            advertisement.style.display = "none";
+        }
+
+        function redirectToSite() {
+            window.location.href = "https://ut-hoso.org/ja/";
+        }
+    </script>
+</body>
+</html>

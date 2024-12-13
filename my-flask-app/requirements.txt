@@ -1,0 +1,9 @@
+Flask==2.2.2
+Flask-Cors==3.0.10
+langchain-core>=0.3.18
+langchain-openai>=0.2.8
+neo4j>=5.25.0,<6.0.0
+openai>=1.54.0
+python-dotenv
+gunicorn
+werkzeug==2.2.3
