@@ -194,7 +194,7 @@
             // ローディングメッセージを表示
             loadingMessage.style.display = "block";
 
-            fetch("http://127.0.0.1:5000/ask", {
+            fetch("https://kaijulaw.onrender.com/ask", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ question })
