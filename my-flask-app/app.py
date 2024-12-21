@@ -36,6 +36,7 @@ CORS(app)
 # LangChain LLMの設定
 llm = ChatOpenAI(temperature=0, model_name="gpt-4o-mini")
 
+#komikomi
 
 # ベクトル検索用のNeo4jVectorオブジェクト
 vector_index = Neo4jVector.from_existing_graph(
